@@ -1,0 +1,915 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:var(--font-sans)}
+.app{max-width:430px;margin:0 auto;min-height:640px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;display:flex;flex-direction:column;position:relative}
+.screen{display:none;flex-direction:column;flex:1;min-height:640px}
+.screen.active{display:flex}
+.topbar{padding:13px 16px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.topbar h2{font-size:16px;font-weight:500;color:var(--color-text-primary);flex:1}
+.back{font-size:13px;color:var(--color-text-secondary);cursor:pointer;padding:4px 0;white-space:nowrap}
+.back:hover{color:var(--color-text-primary)}
+.content{flex:1;padding:16px;overflow-y:auto}
+.nav{display:flex;border-top:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);flex-shrink:0}
+.nav-btn{flex:1;padding:9px 4px;font-size:10px;color:var(--color-text-secondary);cursor:pointer;text-align:center;border:none;background:transparent;display:flex;flex-direction:column;align-items:center;gap:2px}
+.nav-btn.active{color:#1D9E75}
+.nav-icon{font-size:15px}
+.btn{width:100%;padding:10px;border-radius:var(--border-radius-md);font-size:14px;font-weight:500;cursor:pointer;border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-primary);margin-bottom:8px}
+.btn:hover{background:var(--color-background-secondary)}
+.btn.primary{background:#1D9E75;color:#fff;border-color:#1D9E75}
+.btn.primary:hover{background:#0F6E56}
+.btn.amber{background:#FAEEDA;color:#633806;border-color:#EF9F27}
+.btn.sm{padding:5px 11px;font-size:12px;width:auto;margin-bottom:0}
+.btn.danger{color:#A32D2D;border-color:#E24B4A}
+.label{font-size:12px;color:var(--color-text-secondary);margin-bottom:6px;display:block}
+.input-row{margin-bottom:13px}
+input[type=text],input[type=number],textarea{width:100%;padding:9px 12px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);font-size:14px}
+textarea{resize:none;line-height:1.5}
+input:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #9FE1CB}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:13px 15px;margin-bottom:10px}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:var(--border-radius-md);font-weight:500}
+.tag.green{background:#E1F5EE;color:#0F6E56}
+.tag.red{background:#FCEBEB;color:#A32D2D}
+.tag.amber{background:#FAEEDA;color:#854F0B}
+.tag.blue{background:#E6F1FB;color:#185FA5}
+.tag.gray{background:#F1EFE8;color:#5F5E5A}
+.player-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.player-row:last-child{border-bottom:none}
+.avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.avatar-lg{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:500;flex-shrink:0;overflow:hidden;margin:0 auto}
+.avatar-lg img{width:100%;height:100%;object-fit:cover}
+.score-big{font-size:19px;font-weight:500;color:var(--color-text-primary)}
+.score-neg{color:#E24B4A}
+.divider{border:none;border-top:0.5px solid var(--color-border-tertiary);margin:13px 0}
+.section-title{font-size:11px;font-weight:500;color:var(--color-text-secondary);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.05em}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.metric{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center}
+.metric-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:3px}
+.metric-val{font-size:17px;font-weight:500;color:var(--color-text-primary)}
+.round-block{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:11px 12px;margin-bottom:8px}
+.round-block .pname{font-size:13px;font-weight:500;margin-bottom:8px;color:var(--color-text-primary);display:flex;align-items:center;gap:8px}
+/* Declaration UI */
+.decl-row{display:flex;gap:0;margin-top:8px;border-radius:var(--border-radius-md);overflow:hidden;border:0.5px solid var(--color-border-secondary)}
+.decl-seg{flex:1;padding:7px 6px;font-size:12px;border:none;background:transparent;color:var(--color-text-secondary);cursor:pointer;text-align:center;transition:background 0.15s}
+.decl-seg:not(:last-child){border-right:0.5px solid var(--color-border-secondary)}
+.decl-seg:hover{background:var(--color-background-primary)}
+.decl-seg.active-none{background:var(--color-background-primary);color:var(--color-text-primary);font-weight:500}
+.decl-seg.active-success{background:#E1F5EE;color:#0F6E56;font-weight:500}
+.decl-seg.active-fail{background:#FCEBEB;color:#A32D2D;font-weight:500}
+.warn{background:#FAEEDA;border-radius:var(--border-radius-md);padding:9px 12px;font-size:12px;color:#633806;margin-top:8px}
+.err{background:#FCEBEB;border-radius:var(--border-radius-md);padding:9px 12px;font-size:12px;color:#A32D2D;margin-top:8px}
+.settle-row{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.settle-row:last-child{border-bottom:none}
+.amt{font-size:14px;font-weight:500;color:#1D9E75}
+.amt.owed{color:#E24B4A}
+.empty{text-align:center;padding:28px 16px;color:var(--color-text-secondary);font-size:14px}
+.badge-pos{background:var(--color-background-secondary);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--color-text-secondary);flex-shrink:0}
+.radio-group{display:flex;gap:8px;margin-bottom:13px}
+.radio-opt{flex:1;padding:9px 6px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);text-align:center;cursor:pointer;font-size:13px;color:var(--color-text-secondary)}
+.radio-opt.selected{border-color:#1D9E75;color:#1D9E75;background:#E1F5EE}
+.payout-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.payout-row .plabel{flex:1;font-size:13px;color:var(--color-text-primary)}
+.payout-row input{width:80px}
+.home-card{background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:15px;margin-bottom:10px;cursor:pointer;border:0.5px solid var(--color-border-tertiary)}
+.home-card:hover{border-color:#1D9E75}
+.home-card h3{font-size:14px;font-weight:500;margin-bottom:3px;color:var(--color-text-primary)}
+.home-card p{font-size:12px;color:var(--color-text-secondary)}
+.profile-card{background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:13px 15px;margin-bottom:9px;border:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;gap:12px;cursor:pointer}
+.profile-card:hover{border-color:#1D9E75}
+.color-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:13px}
+.color-dot{width:30px;height:30px;border-radius:50%;cursor:pointer;border:2px solid transparent}
+.color-dot.selected{border-color:var(--color-text-primary)}
+.player-select-row{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);margin-bottom:7px;cursor:pointer}
+.player-select-row.selected{border-color:#1D9E75;background:#E1F5EE}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
+.stat-box{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center}
+.stat-val{font-size:18px;font-weight:500;color:var(--color-text-primary)}
+.stat-lbl{font-size:10px;color:var(--color-text-secondary);margin-top:2px}
+.modal-wrap{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;z-index:200;border-radius:var(--border-radius-lg)}
+.modal{background:var(--color-background-primary);border-radius:var(--border-radius-lg);padding:18px;width:92%;border:0.5px solid var(--color-border-secondary);max-height:80%;overflow-y:auto}
+.modal h3{font-size:15px;font-weight:500;margin-bottom:13px;color:var(--color-text-primary)}
+.tie-pos-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+select{padding:7px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);font-size:13px}
+.history-item{padding:12px 0;border-bottom:0.5px solid var(--color-border-tertiary);cursor:pointer}
+.history-item:hover .hi-title{color:#1D9E75}
+.history-item:last-child{border-bottom:none}
+.debt-card{background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:13px 15px;margin-bottom:9px;border:0.5px solid var(--color-border-tertiary)}
+.debt-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.debt-row:last-child{border-bottom:none}
+.round-summary-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px}
+.round-summary-row:last-child{border-bottom:none}
+</style>
+
+<div class="app" id="app">
+
+<!-- HOME -->
+<div class="screen active" id="screen-home">
+  <div class="topbar"><h2>♠ card tracker</h2></div>
+  <div class="content">
+    <span class="label" style="margin-bottom:10px">new game</span>
+    <div class="home-card" onclick="startSetup('session')"><h3>session mode</h3><p>multiple games, settle at the end</p></div>
+    <div class="home-card" onclick="startSetup('single')"><h3>single game</h3><p>one game, settle right after</p></div>
+    <span class="label" style="margin:8px 0 10px">recent sessions</span>
+    <div id="home-sessions"></div>
+  </div>
+  <div class="nav">
+    <button class="nav-btn active" onclick="goHome()"><span class="nav-icon">♠</span>home</button>
+    <button class="nav-btn" onclick="showScreen('profiles')"><span class="nav-icon">👤</span>profiles</button>
+    <button class="nav-btn" onclick="showScreen('debts')"><span class="nav-icon">💰</span>debts</button>
+    <button class="nav-btn" onclick="showScreen('history')"><span class="nav-icon">📋</span>history</button>
+  </div>
+</div>
+
+<!-- PROFILES LIST -->
+<div class="screen" id="screen-profiles">
+  <div class="topbar"><h2>profiles</h2><button class="btn sm primary" onclick="openNewProfile()" style="width:auto;margin:0">+ new</button></div>
+  <div class="content" id="profiles-list"></div>
+  <div class="nav">
+    <button class="nav-btn" onclick="goHome()"><span class="nav-icon">♠</span>home</button>
+    <button class="nav-btn active" onclick="showScreen('profiles')"><span class="nav-icon">👤</span>profiles</button>
+    <button class="nav-btn" onclick="showScreen('debts')"><span class="nav-icon">💰</span>debts</button>
+    <button class="nav-btn" onclick="showScreen('history')"><span class="nav-icon">📋</span>history</button>
+  </div>
+</div>
+
+<!-- PROFILE EDIT -->
+<div class="screen" id="screen-profile-edit">
+  <div class="topbar"><span class="back" onclick="showScreen('profiles')">← back</span><h2 id="profile-edit-title">new profile</h2></div>
+  <div class="content">
+    <div style="text-align:center;margin-bottom:16px">
+      <div class="avatar-lg" id="profile-preview-avatar" style="background:#E1F5EE;color:#0F6E56;margin-bottom:10px">?</div>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <button class="btn sm" onclick="document.getElementById('photo-upload').click()">upload photo</button>
+        <button class="btn sm" onclick="clearPhoto()">use color</button>
+      </div>
+      <input type="file" id="photo-upload" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)">
+    </div>
+    <div class="input-row"><span class="label">avatar color</span><div class="color-grid" id="color-grid"></div></div>
+    <div class="input-row"><span class="label">name</span><input type="text" id="profile-name" placeholder="your name" oninput="updateProfilePreview()"></div>
+    <div class="input-row"><span class="label">bio</span><textarea id="profile-bio" rows="3" placeholder="say something about yourself..."></textarea></div>
+    <button class="btn primary" onclick="saveProfile()">save profile</button>
+    <button class="btn danger" id="delete-profile-btn" style="display:none" onclick="deleteProfile()">delete profile</button>
+  </div>
+</div>
+
+<!-- PROFILE VIEW -->
+<div class="screen" id="screen-profile-view">
+  <div class="topbar"><span class="back" onclick="showScreen('profiles')">← back</span><h2 id="pv-name">profile</h2><button class="btn sm" onclick="editCurrentProfile()" style="width:auto;margin:0">edit</button></div>
+  <div class="content">
+    <div style="text-align:center;margin-bottom:20px">
+      <div class="avatar-lg" id="pv-avatar" style="background:#E1F5EE;color:#0F6E56;margin-bottom:10px"></div>
+      <div style="font-size:14px;color:var(--color-text-secondary);font-style:italic" id="pv-bio"></div>
+    </div>
+    <div class="stat-grid" id="pv-stats"></div>
+  </div>
+</div>
+
+<!-- SETUP -->
+<div class="screen" id="screen-setup">
+  <div class="topbar"><span class="back" onclick="goHome()">← back</span><h2>setup</h2></div>
+  <div class="content">
+    <div class="input-row">
+      <span class="label">select players (2–5)</span>
+      <div id="profile-select-list"></div>
+      <hr class="divider" style="margin:10px 0">
+      <span class="label">add guest players</span>
+      <div id="guest-inputs"></div>
+      <button class="btn" id="add-guest-btn" onclick="addGuestField()">+ add guest</button>
+    </div>
+    <hr class="divider">
+    <div class="input-row"><span class="label">win condition</span>
+      <div class="radio-group">
+        <div class="radio-opt selected" id="wc-1000" onclick="selectWC('1000')">first to 1000</div>
+        <div class="radio-opt" id="wc-high" onclick="selectWC('high')">highest score</div>
+      </div>
+    </div>
+    <hr class="divider">
+    <div class="input-row"><span class="label">payout per position (€) — set 0 to skip</span><div id="payout-rows"></div></div>
+    <hr class="divider">
+    <button class="btn primary" onclick="startGame()">start game</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div class="screen" id="screen-game">
+  <div class="topbar"><h2 id="game-title">game 1</h2><span class="tag blue" id="game-badge">round 1</span></div>
+  <div class="content">
+    <div class="grid2" id="score-metrics"></div>
+    <div class="card">
+      <div class="section-title">leaderboard</div>
+      <div id="leaderboard"></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="section-title" style="margin-bottom:0">round entry</div>
+        <span id="round-total-disp" style="font-size:11px;color:var(--color-text-secondary)"></span>
+      </div>
+      <div id="round-inputs"></div>
+      <div id="round-feedback"></div>
+      <button class="btn primary" onclick="submitRound()" style="margin-top:10px">confirm round</button>
+      <button class="btn amber" id="finish-game-btn" onclick="forceFinish()" style="display:none;margin-top:4px">finish game now</button>
+    </div>
+  </div>
+</div>
+
+<!-- TIE MODAL -->
+<div id="tie-modal" style="display:none" class="modal-wrap">
+  <div class="modal">
+    <h3>tied scores — assign positions</h3>
+    <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:14px">play a side game then assign final positions below.</p>
+    <div id="tie-rows"></div>
+    <button class="btn primary" style="margin-top:8px" onclick="confirmTies()">confirm</button>
+  </div>
+</div>
+
+<!-- END GAME -->
+<div class="screen" id="screen-endgame">
+  <div class="topbar"><h2 id="endgame-title">game over</h2></div>
+  <div class="content">
+    <div class="card"><div class="section-title">final standings</div><div id="final-standings"></div></div>
+    <div class="card"><div class="section-title">payouts this game</div><div id="payout-summary"></div></div>
+    <div id="session-actions" style="margin-top:4px"></div>
+  </div>
+</div>
+
+<!-- SETTLEMENT -->
+<div class="screen" id="screen-settle">
+  <div class="topbar"><span class="back" onclick="showScreen('endgame')">← back</span><h2>settlement</h2></div>
+  <div class="content">
+    <div class="card"><div class="section-title">simplified debts</div><div id="settle-list"></div></div>
+    <div class="card"><div class="section-title">mark as paid</div><div id="payment-status"></div></div>
+    <button class="btn primary" onclick="closeSession()">save & close session</button>
+  </div>
+</div>
+
+<!-- HISTORY LIST -->
+<div class="screen" id="screen-history">
+  <div class="topbar"><h2>history</h2></div>
+  <div class="content" id="history-content"></div>
+  <div class="nav">
+    <button class="nav-btn" onclick="goHome()"><span class="nav-icon">♠</span>home</button>
+    <button class="nav-btn" onclick="showScreen('profiles')"><span class="nav-icon">👤</span>profiles</button>
+    <button class="nav-btn" onclick="showScreen('debts')"><span class="nav-icon">💰</span>debts</button>
+    <button class="nav-btn active" onclick="showScreen('history')"><span class="nav-icon">📋</span>history</button>
+  </div>
+</div>
+
+<!-- HISTORY DETAIL -->
+<div class="screen" id="screen-history-detail">
+  <div class="topbar"><span class="back" onclick="showScreen('history')">← back</span><h2 id="hd-title">session detail</h2></div>
+  <div class="content" id="hd-content"></div>
+</div>
+
+<!-- DEBTS PAGE -->
+<div class="screen" id="screen-debts">
+  <div class="topbar"><h2>debt tracker</h2></div>
+  <div class="content" id="debts-content"></div>
+  <div class="nav">
+    <button class="nav-btn" onclick="goHome()"><span class="nav-icon">♠</span>home</button>
+    <button class="nav-btn" onclick="showScreen('profiles')"><span class="nav-icon">👤</span>profiles</button>
+    <button class="nav-btn active" onclick="showScreen('debts')"><span class="nav-icon">💰</span>debts</button>
+    <button class="nav-btn" onclick="showScreen('history')"><span class="nav-icon">📋</span>history</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+const COLORS=[
+  {bg:'#E1F5EE',txt:'#0F6E56'},{bg:'#FAEEDA',txt:'#854F0B'},
+  {bg:'#E6F1FB',txt:'#185FA5'},{bg:'#FBEAF0',txt:'#993556'},
+  {bg:'#EAF3DE',txt:'#3B6D11'},{bg:'#EEEDFE',txt:'#3C3489'},
+  {bg:'#FAECE7',txt:'#993C1D'},{bg:'#F1EFE8',txt:'#444441'}
+];
+
+function ls(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
+function lss(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+
+let S={
+  mode:'session',winCondition:'1000',
+  gamePlayers:[],payouts:{},games:[],
+  currentGame:null,currentRound:1,
+  sessions:ls('cgt_sessions',[]),
+  profiles:ls('cgt_profiles',[]),
+  pendingPayments:{},declStates:{},
+  tieData:null,editingProfileId:null,
+  editingProfilePhoto:null,editingProfileColor:0,
+  selectedProfileIds:[],guests:[]
+};
+
+function save(){lss('cgt_sessions',S.sessions);lss('cgt_profiles',S.profiles);}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById('screen-'+id);
+  if(el) el.classList.add('active');
+  document.getElementById('tie-modal').style.display='none';
+  if(id==='history') renderHistory();
+  if(id==='profiles') renderProfilesList();
+  if(id==='debts') renderDebts();
+}
+function goHome(){showScreen('home');renderHome();}
+
+// ── AVATAR HELPER ──
+function avatarHTML(p,size=34){
+  const col=COLORS[p.colorIdx||0];
+  const fs=size<36?'12px':'18px';
+  if(p.photo) return `<div style="width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;flex-shrink:0"><img src="${p.photo}" style="width:100%;height:100%;object-fit:cover"></div>`;
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${col.bg};color:${col.txt};display:flex;align-items:center;justify-content:center;font-size:${fs};font-weight:500;flex-shrink:0">${(p.name||'?')[0].toUpperCase()}</div>`;
+}
+
+// ── PROFILES ──
+function openNewProfile(){
+  S.editingProfileId=null;S.editingProfilePhoto=null;S.editingProfileColor=0;
+  document.getElementById('profile-name').value='';
+  document.getElementById('profile-bio').value='';
+  document.getElementById('profile-edit-title').textContent='new profile';
+  document.getElementById('delete-profile-btn').style.display='none';
+  renderColorGrid();updateProfilePreview();showScreen('profile-edit');
+}
+function editCurrentProfile(){const p=S.profiles.find(p=>p.id===S.viewingProfileId);if(p) openEditProfile(p);}
+function openEditProfile(p){
+  S.editingProfileId=p.id;S.editingProfilePhoto=p.photo||null;S.editingProfileColor=p.colorIdx||0;
+  document.getElementById('profile-name').value=p.name;
+  document.getElementById('profile-bio').value=p.bio||'';
+  document.getElementById('profile-edit-title').textContent='edit profile';
+  document.getElementById('delete-profile-btn').style.display='block';
+  renderColorGrid();updateProfilePreview();showScreen('profile-edit');
+}
+function renderColorGrid(){
+  const c=document.getElementById('color-grid');c.innerHTML='';
+  COLORS.forEach((col,i)=>{
+    const d=document.createElement('div');
+    d.className='color-dot'+(i===S.editingProfileColor?' selected':'');
+    d.style.background=col.bg;
+    d.onclick=()=>{S.editingProfileColor=i;renderColorGrid();updateProfilePreview();};
+    c.appendChild(d);
+  });
+}
+function updateProfilePreview(){
+  const name=document.getElementById('profile-name').value.trim();
+  const av=document.getElementById('profile-preview-avatar');
+  const col=COLORS[S.editingProfileColor];
+  if(S.editingProfilePhoto){av.style.background='transparent';av.innerHTML=`<img src="${S.editingProfilePhoto}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;}
+  else{av.style.background=col.bg;av.style.color=col.txt;av.innerHTML=name?name[0].toUpperCase():'?';}
+}
+function handlePhotoUpload(e){
+  const file=e.target.files[0];if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{S.editingProfilePhoto=ev.target.result;updateProfilePreview();};
+  reader.readAsDataURL(file);
+}
+function clearPhoto(){S.editingProfilePhoto=null;updateProfilePreview();}
+function saveProfile(){
+  const name=document.getElementById('profile-name').value.trim();
+  if(!name){alert('please enter a name');return;}
+  const bio=document.getElementById('profile-bio').value.trim();
+  if(S.editingProfileId){
+    const p=S.profiles.find(p=>p.id===S.editingProfileId);
+    if(p){p.name=name;p.bio=bio;p.colorIdx=S.editingProfileColor;p.photo=S.editingProfilePhoto||null;}
+  } else {
+    S.profiles.push({id:Date.now(),name,bio,colorIdx:S.editingProfileColor,photo:S.editingProfilePhoto||null,wins:0,games:0,moneyWon:0,moneyLost:0});
+  }
+  save();showScreen('profiles');
+}
+function deleteProfile(){
+  S.profiles=S.profiles.filter(p=>p.id!==S.editingProfileId);save();showScreen('profiles');
+}
+function renderProfilesList(){
+  const c=document.getElementById('profiles-list');
+  if(S.profiles.length===0){c.innerHTML='<div class="empty">no profiles yet. create one!</div>';return;}
+  c.innerHTML='';
+  S.profiles.forEach(p=>{
+    const div=document.createElement('div');div.className='profile-card';
+    div.onclick=()=>viewProfile(p.id);
+    const net=(p.moneyWon||0)-(p.moneyLost||0);
+    div.innerHTML=`${avatarHTML(p,40)}<div style="flex:1"><div style="font-size:14px;font-weight:500;color:var(--color-text-primary)">${p.name}</div><div style="font-size:12px;color:var(--color-text-secondary)">${p.bio||'no bio'}</div></div><div style="text-align:right"><div style="font-size:12px;color:#1D9E75">${p.wins||0} wins</div><div style="font-size:11px;color:${net>=0?'#1D9E75':'#E24B4A'}">${net>=0?'+':''}€${net.toFixed(0)}</div></div>`;
+    c.appendChild(div);
+  });
+}
+function viewProfile(id){
+  S.viewingProfileId=id;
+  const p=S.profiles.find(p=>p.id===id);if(!p) return;
+  const col=COLORS[p.colorIdx||0];
+  document.getElementById('pv-name').textContent=p.name;
+  document.getElementById('pv-bio').textContent=p.bio||'no bio yet';
+  const av=document.getElementById('pv-avatar');
+  if(p.photo){av.style.background='transparent';av.innerHTML=`<img src="${p.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;}
+  else{av.style.background=col.bg;av.style.color=col.txt;av.innerHTML=p.name[0].toUpperCase();}
+  const net=(p.moneyWon||0)-(p.moneyLost||0);
+  document.getElementById('pv-stats').innerHTML=`<div class="stat-box"><div class="stat-val">${p.games||0}</div><div class="stat-lbl">games</div></div><div class="stat-box"><div class="stat-val">${p.wins||0}</div><div class="stat-lbl">wins</div></div><div class="stat-box"><div class="stat-val" style="color:${net>=0?'#1D9E75':'#E24B4A'}">${net>=0?'+':''}€${net.toFixed(0)}</div><div class="stat-lbl">net €</div></div>`;
+  showScreen('profile-view');
+}
+
+// ── SETUP ──
+function startSetup(mode){
+  S.mode=mode;S.selectedProfileIds=[];S.guests=[];S.payouts={};S.games=[];S.currentRound=1;S.winCondition='1000';
+  selectWC('1000');renderSetup();showScreen('setup');
+}
+function renderSetup(){renderProfileSelectList();renderGuestInputs();renderPayoutRows();}
+function renderProfileSelectList(){
+  const c=document.getElementById('profile-select-list');
+  if(S.profiles.length===0){c.innerHTML='<div style="font-size:13px;color:var(--color-text-secondary);padding:4px 0 8px">no profiles saved yet</div>';return;}
+  c.innerHTML='';
+  S.profiles.forEach(p=>{
+    const sel=S.selectedProfileIds.includes(p.id);
+    const div=document.createElement('div');
+    div.className='player-select-row'+(sel?' selected':'');
+    div.onclick=()=>toggleProfileSelect(p.id);
+    div.innerHTML=`${avatarHTML(p,30)}<div style="flex:1;font-size:13px;color:var(--color-text-primary)">${p.name}</div><div style="font-size:16px;color:${sel?'#1D9E75':'var(--color-border-secondary)'}">${sel?'✓':'○'}</div>`;
+    c.appendChild(div);
+  });
+}
+function toggleProfileSelect(id){
+  const total=S.selectedProfileIds.length+S.guests.length;
+  if(S.selectedProfileIds.includes(id)){S.selectedProfileIds=S.selectedProfileIds.filter(x=>x!==id);}
+  else{if(total>=5){alert('max 5 players');return;}S.selectedProfileIds.push(id);}
+  renderSetup();
+}
+function renderGuestInputs(){
+  const c=document.getElementById('guest-inputs');c.innerHTML='';
+  S.guests.forEach((g,i)=>{
+    const row=document.createElement('div');
+    row.style='display:flex;gap:8px;margin-bottom:8px;align-items:center';
+    row.innerHTML=`<input type="text" placeholder="guest name" value="${g}" oninput="S.guests[${i}]=this.value;renderPayoutRows()" style="flex:1"><button onclick="removeGuest(${i})" style="background:none;border:none;color:var(--color-text-secondary);cursor:pointer;font-size:18px;padding:0 4px">×</button>`;
+    c.appendChild(row);
+  });
+  const total=S.selectedProfileIds.length+S.guests.length;
+  document.getElementById('add-guest-btn').style.display=total>=5?'none':'block';
+}
+function addGuestField(){
+  if(S.selectedProfileIds.length+S.guests.length>=5){alert('max 5 players');return;}
+  S.guests.push('');renderGuestInputs();renderPayoutRows();
+}
+function removeGuest(i){S.guests.splice(i,1);renderGuestInputs();renderPayoutRows();}
+function getPositionLabels(n){
+  if(n>=5) return['lowest pays','2nd lowest pays','3rd pays','2nd highest pays','winner collects'];
+  if(n===4) return['lowest pays','2nd lowest pays','2nd highest pays','winner collects'];
+  if(n===3) return['lowest pays','2nd lowest pays','winner collects'];
+  return['lowest pays','winner collects'];
+}
+function renderPayoutRows(){
+  const n=Math.max(S.selectedProfileIds.length+S.guests.length,2);
+  const labels=getPositionLabels(n);const defaults=[5,3,2,1,0];
+  const c=document.getElementById('payout-rows');c.innerHTML='';
+  labels.forEach((label,i)=>{
+    const key='pos_'+i;
+    if(S.payouts[key]===undefined) S.payouts[key]=defaults[i]||0;
+    const row=document.createElement('div');row.className='payout-row';
+    row.innerHTML=`<span class="plabel">${label}</span><input type="number" min="0" step="0.5" value="${S.payouts[key]}" oninput="S.payouts['${key}']=parseFloat(this.value)||0" style="width:80px">`;
+    c.appendChild(row);
+  });
+}
+function selectWC(v){
+  S.winCondition=v;
+  document.getElementById('wc-1000').classList.toggle('selected',v==='1000');
+  document.getElementById('wc-high').classList.toggle('selected',v==='high');
+}
+function getGamePlayers(){
+  const players=[];let ci=0;
+  S.selectedProfileIds.forEach(id=>{
+    const p=S.profiles.find(x=>x.id===id);
+    if(p) players.push({name:p.name,colorIdx:p.colorIdx||0,photo:p.photo||null,profileId:p.id});
+    ci++;
+  });
+  S.guests.forEach(g=>{
+    players.push({name:g.trim()||`guest ${ci+1}`,colorIdx:ci%COLORS.length,photo:null,profileId:null});ci++;
+  });
+  return players;
+}
+function startGame(){
+  const players=getGamePlayers();
+  if(players.length<2){alert('select at least 2 players');return;}
+  S.gamePlayers=players;
+  S.currentGame={num:S.games.length+1,players:players.map(p=>({...p,score:0})),rounds:[],finished:false};
+  S.currentRound=1;S.declStates={};
+  renderGameScreen();showScreen('game');
+}
+
+// ── GAME ──
+function renderGameScreen(){
+  const g=S.currentGame;
+  document.getElementById('game-title').textContent=`game ${g.num}`;
+  document.getElementById('game-badge').textContent=`round ${S.currentRound}`;
+  document.getElementById('finish-game-btn').style.display=S.winCondition==='high'?'block':'none';
+  renderLeaderboard();renderRoundInputs();renderMetrics();
+}
+function renderMetrics(){
+  const g=S.currentGame;
+  const s=[...g.players].sort((a,b)=>b.score-a.score);
+  document.getElementById('score-metrics').innerHTML=`<div class="metric"><div class="metric-label">leader</div><div class="metric-val" style="font-size:13px;color:#1D9E75">${s[0].name}</div></div><div class="metric"><div class="metric-label">top score</div><div class="metric-val">${s[0].score}</div></div>`;
+}
+function renderLeaderboard(){
+  const g=S.currentGame;
+  const sorted=[...g.players].sort((a,b)=>b.score-a.score);
+  const c=document.getElementById('leaderboard');c.innerHTML='';
+  sorted.forEach((p,i)=>{
+    const row=document.createElement('div');row.className='player-row';
+    row.innerHTML=`<div class="badge-pos">${i+1}</div>${avatarHTML(p,34)}<div style="flex:1;font-size:13px;font-weight:500;color:var(--color-text-primary);margin-left:2px">${p.name}</div><div class="score-big ${p.score<0?'score-neg':''}">${p.score}</div>`;
+    c.appendChild(row);
+  });
+}
+
+// ── DECLARATION LOGIC ──
+// declStates[i]: 'none' | 'success' | 'fail'
+function renderRoundInputs(){
+  const g=S.currentGame;
+  S.declStates={};
+  const c=document.getElementById('round-inputs');c.innerHTML='';
+  g.players.forEach((p,i)=>{
+    const div=document.createElement('div');div.className='round-block';
+    div.innerHTML=`
+      <div class="pname">${avatarHTML(p,24)}<span style="margin-left:4px">${p.name}</span> <span style="font-size:11px;color:var(--color-text-secondary);font-weight:400">${p.score} pts</span></div>
+      <input type="number" id="pts-${i}" placeholder="points won (0–360)" min="0" max="360" oninput="updateRoundTotal()">
+      <div class="decl-row" id="decl-row-${i}">
+        <button class="decl-seg active-none" id="ds-none-${i}" onclick="setDecl(${i},'none')">no declare</button>
+        <button class="decl-seg" id="ds-success-${i}" onclick="setDecl(${i},'success')">declared: success</button>
+        <button class="decl-seg" id="ds-fail-${i}" onclick="setDecl(${i},'fail')">declared: fail</button>
+      </div>`;
+    c.appendChild(div);
+  });
+  document.getElementById('round-feedback').innerHTML='';
+  updateRoundTotal();
+}
+
+function setDecl(i,state){
+  S.declStates[i]=state;
+  const g=S.currentGame;
+  g.players.forEach((_,j)=>{
+    ['none','success','fail'].forEach(s=>{
+      const btn=document.getElementById(`ds-${s}-${j}`);
+      if(btn) btn.className='decl-seg'+(S.declStates[j]===s?` active-${s}`:'');
+    });
+  });
+  updateRoundTotal();
+  updateDeclFeedback();
+}
+
+function updateDeclFeedback(){
+  const g=S.currentGame;
+  const successors=g.players.filter((_,i)=>S.declStates[i]==='success');
+  const failors=g.players.filter((_,i)=>S.declStates[i]==='fail');
+  const fb=document.getElementById('round-feedback');
+  if(successors.length>0){
+    fb.innerHTML=`<div class="warn">${successors.map(p=>p.name).join(', ')} declared success → 720 pts. all others get 0 pts${failors.length>0?' (other declarers get −360)':''}</div>`;
+  } else if(failors.length>0){
+    fb.innerHTML=`<div class="warn">failed declarers get −360 each. non-declarers keep their actual points (no total restriction).</div>`;
+  } else {
+    fb.innerHTML='';
+  }
+}
+
+function updateRoundTotal(){
+  const g=S.currentGame;
+  const hasSuccess=g.players.some((_,i)=>S.declStates[i]==='success');
+  if(hasSuccess){document.getElementById('round-total-disp').textContent='declaration won — others get 0';return;}
+  const hasFail=g.players.some((_,i)=>S.declStates[i]==='fail');
+  let nonDeclTotal=0;
+  g.players.forEach((p,i)=>{
+    const ds=S.declStates[i]||'none';
+    if(ds==='none') nonDeclTotal+=parseFloat(document.getElementById('pts-'+i)?.value)||0;
+  });
+  if(hasFail){
+    document.getElementById('round-total-disp').textContent=`non-decl pts: ${nonDeclTotal}`;
+  } else {
+    document.getElementById('round-total-disp').textContent=`total: ${nonDeclTotal} / 360`;
+  }
+}
+
+function submitRound(){
+  const g=S.currentGame;
+  const fb=document.getElementById('round-feedback');
+  const ptsArr=g.players.map((_,i)=>parseFloat(document.getElementById('pts-'+i).value)||0);
+  const successIdx=g.players.findIndex((_,i)=>S.declStates[i]==='success');
+  const hasAnyDecl=g.players.some((_,i)=>S.declStates[i]==='fail'||S.declStates[i]==='success');
+  let result=[];
+
+  if(successIdx>=0){
+    // One succeeded: 720 for them, -360 for other declarers, 0 for everyone else
+    result=g.players.map((_,i)=>{
+      if(i===successIdx) return 720;
+      if(S.declStates[i]==='fail') return -360;
+      return 0;
+    });
+  } else if(hasAnyDecl){
+    // All declarers failed — non-declarers keep actual pts, no total restriction
+    // Just validate non-decl pts are each 0-360
+    let valid=true;
+    g.players.forEach((p,i)=>{
+      const ds=S.declStates[i]||'none';
+      if(ds==='none'&&(ptsArr[i]<0||ptsArr[i]>360)){valid=false;}
+    });
+    if(!valid){fb.innerHTML=`<div class="err">each player's points must be between 0 and 360.</div>`;return;}
+    result=g.players.map((_,i)=>{
+      if(S.declStates[i]==='fail') return -360;
+      return ptsArr[i];
+    });
+  } else {
+    // Normal round — must total exactly 360
+    const total=ptsArr.reduce((a,b)=>a+b,0);
+    if(total!==360){fb.innerHTML=`<div class="err">points total ${total} — must equal exactly 360 in a normal round.</div>`;return;}
+    result=[...ptsArr];
+  }
+
+  g.players.forEach((p,i)=>p.score+=result[i]);
+  g.rounds.push({pts:result,declStates:{...S.declStates}});
+  S.currentRound++;S.declStates={};
+
+  const winner=checkWinner(g);
+  if(winner) finishGame(g);else renderGameScreen();
+}
+
+function forceFinish(){finishGame(S.currentGame);}
+function checkWinner(g){
+  if(S.winCondition==='1000') return g.players.find(p=>p.score>=1000)||null;
+  return null;
+}
+function finishGame(g){
+  const sorted=[...g.players].sort((a,b)=>b.score-a.score);
+  const hasTie=sorted.some((p,i)=>i>0&&p.score===sorted[i-1].score);
+  if(hasTie){showTieDialog(sorted,g);}
+  else{g.finalOrder=sorted;g.finished=true;S.games.push(g);updateProfileStats(g,sorted);renderEndGame(g);showScreen('endgame');}
+}
+function showTieDialog(sorted,g){
+  S.tieData={sorted,g};
+  const c=document.getElementById('tie-rows');c.innerHTML='';
+  sorted.forEach((p,i)=>{
+    const row=document.createElement('div');row.className='tie-pos-row';
+    let opts='';for(let j=1;j<=sorted.length;j++) opts+=`<option value="${j}" ${j===i+1?'selected':''}>${j}${j===1?'st':j===2?'nd':j===3?'rd':'th'}</option>`;
+    row.innerHTML=`<span style="flex:1;font-size:13px">${p.name} <span style="color:var(--color-text-secondary)">(${p.score})</span></span><select id="tiepos-${i}">${opts}</select>`;
+    c.appendChild(row);
+  });
+  document.getElementById('tie-modal').style.display='flex';
+}
+function confirmTies(){
+  const {sorted,g}=S.tieData;
+  const positions=sorted.map((p,i)=>({player:p,pos:parseInt(document.getElementById('tiepos-'+i).value)}));
+  positions.sort((a,b)=>a.pos-b.pos);
+  g.finalOrder=positions.map(x=>x.player);
+  g.finished=true;S.games.push(g);updateProfileStats(g,g.finalOrder);
+  document.getElementById('tie-modal').style.display='none';
+  renderEndGame(g);showScreen('endgame');
+}
+function updateProfileStats(g,sortedPlayers){
+  const payouts=calcPayouts(sortedPlayers,sortedPlayers[0].score===1000);
+  sortedPlayers.forEach((p,i)=>{
+    if(!p.profileId) return;
+    const prof=S.profiles.find(x=>x.id===p.profileId);if(!prof) return;
+    prof.games=(prof.games||0)+1;
+    if(i===0) prof.wins=(prof.wins||0)+1;
+    const paid=payouts.filter(r=>r.from===p.name).reduce((s,r)=>s+r.amount,0);
+    const rcvd=payouts.filter(r=>r.to===p.name).reduce((s,r)=>s+r.amount,0);
+    prof.moneyLost=(prof.moneyLost||0)+paid;
+    prof.moneyWon=(prof.moneyWon||0)+rcvd;
+  });
+  save();
+}
+function calcPayouts(sorted,winnerExact){
+  const n=sorted.length;const winner=sorted[0];const result=[];
+  sorted.slice(1).forEach((p,idx)=>{
+    const posIdx=n-2-idx;
+    const base=S.payouts['pos_'+posIdx]||0;if(base===0) return;
+    let amt=base,notes=[];
+    if(p.score<=0){amt+=base;notes.push('0/neg');}
+    if(winnerExact){amt+=base;notes.push('exact 1000');}
+    result.push({from:p.name,to:winner.name,amount:amt,multiplierNote:notes.join('+')});
+  });
+  return result;
+}
+function renderEndGame(g){
+  const sorted=g.finalOrder||[...g.players].sort((a,b)=>b.score-a.score);
+  const winnerExact=sorted[0].score===1000;
+  document.getElementById('endgame-title').textContent=`game ${g.num} over`;
+  const st=document.getElementById('final-standings');st.innerHTML='';
+  sorted.forEach((p,i)=>{
+    const row=document.createElement('div');row.className='player-row';
+    let tags='';
+    if(i===0) tags+=`<span class="tag green" style="margin-left:5px">winner</span>`;
+    if(winnerExact&&i===0) tags+=`<span class="tag amber" style="margin-left:4px">exact 1000</span>`;
+    if(p.score<0) tags+=`<span class="tag red" style="margin-left:4px">negative</span>`;
+    if(p.score===0&&i>0) tags+=`<span class="tag amber" style="margin-left:4px">zero</span>`;
+    row.innerHTML=`<div class="badge-pos">${i+1}</div>${avatarHTML(p,34)}<div style="flex:1;margin-left:2px"><div style="font-size:13px;font-weight:500;color:var(--color-text-primary)">${p.name}${tags}</div></div><div class="score-big ${p.score<0?'score-neg':''}">${p.score}</div>`;
+    st.appendChild(row);
+  });
+  const payouts=calcPayouts(sorted,winnerExact);
+  g.payoutDetails=payouts;
+  const ps=document.getElementById('payout-summary');ps.innerHTML='';
+  if(payouts.length===0){ps.innerHTML='<div style="font-size:13px;color:var(--color-text-secondary);padding:6px 0">no payouts configured</div>';}
+  payouts.forEach(r=>{
+    const div=document.createElement('div');div.className='settle-row';
+    div.innerHTML=`<span style="font-size:13px">${r.from}${r.multiplierNote?` <span style="color:var(--color-text-secondary);font-size:11px">(${r.multiplierNote})</span>`:''}</span><span style="color:var(--color-text-secondary)">→</span><span style="font-size:13px">${r.to}</span><span class="amt">€${r.amount.toFixed(2)}</span>`;
+    ps.appendChild(div);
+  });
+  const sa=document.getElementById('session-actions');sa.innerHTML='';
+  if(S.mode==='session'){
+    sa.innerHTML=`<button class="btn primary" onclick="nextGame()">start next game</button><button class="btn" onclick="endSession()">end session & settle</button>`;
+  } else {
+    sa.innerHTML=`<button class="btn primary" onclick="endSession()">settle & save</button>`;
+  }
+}
+function nextGame(){
+  S.currentGame={num:S.games.length+1,players:S.gamePlayers.map(p=>({...p,score:0})),rounds:[],finished:false};
+  S.currentRound=1;S.declStates={};renderGameScreen();showScreen('game');
+}
+function endSession(){
+  const balances={};
+  S.gamePlayers.forEach(p=>balances[p.name]=0);
+  S.games.forEach(g=>{(g.payoutDetails||[]).forEach(r=>{balances[r.from]=(balances[r.from]||0)-r.amount;balances[r.to]=(balances[r.to]||0)+r.amount;});});
+  const txns=simplifyDebts(balances);
+  S.pendingPayments={};
+  txns.forEach((r,i)=>S.pendingPayments[i]={...r,paid:false});
+  renderSettlement(txns);showScreen('settle');
+}
+function simplifyDebts(balances){
+  const d=[],cr=[];
+  Object.entries(balances).forEach(([name,bal])=>{
+    if(bal<-0.01) d.push({name,amt:-bal});else if(bal>0.01) cr.push({name,amt:bal});
+  });
+  const txns=[];let di=0,ci=0;
+  const dd=d.map(x=>({...x})),cc=cr.map(x=>({...x}));
+  while(di<dd.length&&ci<cc.length){
+    const amt=Math.min(dd[di].amt,cc[ci].amt);
+    txns.push({from:dd[di].name,to:cc[ci].name,amount:parseFloat(amt.toFixed(2))});
+    dd[di].amt-=amt;cc[ci].amt-=amt;
+    if(dd[di].amt<0.01) di++;if(cc[ci].amt<0.01) ci++;
+  }
+  return txns;
+}
+function renderSettlement(txns){
+  const sl=document.getElementById('settle-list');sl.innerHTML='';
+  if(txns.length===0){sl.innerHTML='<div class="empty">all even!</div>';return;}
+  txns.forEach(r=>{
+    const div=document.createElement('div');div.className='settle-row';
+    div.innerHTML=`<span style="font-size:14px;font-weight:500">${r.from}</span><span style="color:var(--color-text-secondary)">→</span><span style="font-size:14px;font-weight:500">${r.to}</span><span class="amt">€${r.amount.toFixed(2)}</span>`;
+    sl.appendChild(div);
+  });
+  renderPaymentStatus();
+}
+function renderPaymentStatus(){
+  const c=document.getElementById('payment-status');c.innerHTML='';
+  const entries=Object.entries(S.pendingPayments);
+  if(entries.length===0){c.innerHTML='<div class="empty" style="padding:10px 0">nothing to track</div>';return;}
+  entries.forEach(([i,p])=>{
+    const div=document.createElement('div');div.className='settle-row';
+    div.innerHTML=`<span style="font-size:12px;color:var(--color-text-secondary);flex:1">${p.from} → ${p.to} €${p.amount.toFixed(2)}</span><button onclick="togglePaid(${i})" class="btn sm" style="${p.paid?'background:#E1F5EE;color:#0F6E56;border-color:#1D9E75':''}">${p.paid?'✓ paid':'mark paid'}</button>`;
+    c.appendChild(div);
+  });
+}
+function togglePaid(i){S.pendingPayments[i].paid=!S.pendingPayments[i].paid;renderPaymentStatus();}
+function closeSession(){
+  const session={
+    id:Date.now(),
+    date:new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}),
+    mode:S.mode,
+    players:S.gamePlayers.map(p=>p.name),
+    games:S.games.map(g=>({
+      num:g.num,
+      rounds:g.rounds,
+      finalOrder:(g.finalOrder||[]).map(p=>({name:p.name,score:p.score,colorIdx:p.colorIdx})),
+      payoutDetails:g.payoutDetails||[]
+    })),
+    gamesCount:S.games.length,
+    payments:Object.values(S.pendingPayments),
+    payouts:{...S.payouts}
+  };
+  S.sessions.push(session);save();goHome();
+}
+
+// ── HISTORY ──
+function renderHistory(){
+  const c=document.getElementById('history-content');
+  if(S.sessions.length===0){c.innerHTML='<div class="empty">no history yet</div>';return;}
+  c.innerHTML='';
+  S.sessions.slice().reverse().forEach(s=>{
+    const unpaid=(s.payments||[]).filter(p=>!p.paid).length;
+    const div=document.createElement('div');div.className='history-item';
+    div.onclick=()=>showSessionDetail(s.id);
+    div.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:start"><div><div class="hi-title" style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:3px">${s.players.join(' · ')}</div><div style="font-size:12px;color:var(--color-text-secondary)">${s.date} · ${s.gamesCount||0} game${(s.gamesCount||0)!==1?'s':''}</div></div>${unpaid>0?`<span class="tag amber">${unpaid} unpaid</span>`:`<span class="tag green">settled</span>`}</div>`;
+    c.appendChild(div);
+  });
+}
+
+function showSessionDetail(id){
+  const s=S.sessions.find(x=>x.id===id);if(!s) return;
+  document.getElementById('hd-title').textContent=s.date;
+  const c=document.getElementById('hd-content');c.innerHTML='';
+
+  // players summary
+  const playersCard=document.createElement('div');playersCard.className='card';
+  playersCard.innerHTML=`<div class="section-title">players</div><div style="font-size:13px;color:var(--color-text-primary)">${s.players.join(', ')}</div><div style="font-size:12px;color:var(--color-text-secondary);margin-top:4px">${s.gamesCount||0} game${(s.gamesCount||0)!==1?'s':''} · ${s.mode==='session'?'session mode':'single game'}</div>`;
+  c.appendChild(playersCard);
+
+  // per-game standings
+  (s.games||[]).forEach(g=>{
+    const gc=document.createElement('div');gc.className='card';
+    let html=`<div class="section-title">game ${g.num} — standings</div>`;
+    (g.finalOrder||[]).forEach((p,i)=>{
+      const neg=p.score<0;
+      html+=`<div class="player-row"><div class="badge-pos">${i+1}</div><div style="flex:1;font-size:13px;font-weight:500;color:var(--color-text-primary)">${p.name}</div><div style="font-size:17px;font-weight:500;color:${neg?'#E24B4A':'var(--color-text-primary)'}">${p.score}</div></div>`;
+    });
+    if(g.payoutDetails&&g.payoutDetails.length>0){
+      html+=`<div class="section-title" style="margin-top:12px">payouts</div>`;
+      g.payoutDetails.forEach(r=>{
+        html+=`<div class="debt-row"><span style="font-size:13px;flex:1">${r.from} → ${r.to}</span><span class="amt">€${r.amount.toFixed(2)}</span></div>`;
+      });
+    }
+    gc.innerHTML=html;c.appendChild(gc);
+  });
+
+  // settlement
+  const txnCard=document.createElement('div');txnCard.className='card';
+  let thtml=`<div class="section-title">settlement</div>`;
+  const paid=(s.payments||[]).filter(p=>p.paid);
+  const unpaid=(s.payments||[]).filter(p=>!p.paid);
+  if(s.payments&&s.payments.length>0){
+    s.payments.forEach(p=>{
+      thtml+=`<div class="debt-row"><span style="font-size:13px;flex:1">${p.from} → ${p.to}</span><span class="amt" style="margin-right:8px">€${p.amount.toFixed(2)}</span><span class="tag ${p.paid?'green':'amber'}">${p.paid?'paid':'unpaid'}</span></div>`;
+    });
+  } else {
+    thtml+=`<div style="font-size:13px;color:var(--color-text-secondary);padding:6px 0">no debts recorded</div>`;
+  }
+  txnCard.innerHTML=thtml;c.appendChild(txnCard);
+
+  showScreen('history-detail');
+}
+
+// ── DEBTS PAGE ──
+function renderDebts(){
+  const c=document.getElementById('debts-content');
+  // gather all unpaid debts across all sessions
+  const allDebts=[];
+  S.sessions.forEach(s=>{
+    (s.payments||[]).forEach((p,i)=>{
+      if(!p.paid) allDebts.push({...p,sessionId:s.id,sessionDate:s.date,sessionPlayers:s.players,idx:i});
+    });
+  });
+
+  // build net balances across all unpaid debts
+  const balances={};
+  S.sessions.forEach(s=>{
+    (s.payments||[]).forEach(p=>{
+      if(!p.paid){
+        balances[p.from]=(balances[p.from]||0)-p.amount;
+        balances[p.to]=(balances[p.to]||0)+p.amount;
+      }
+    });
+  });
+  const simplified=simplifyDebts(balances);
+
+  c.innerHTML='';
+
+  // simplified view
+  const simpCard=document.createElement('div');simpCard.className='card';
+  let shtml=`<div class="section-title">simplified — who pays whom</div>`;
+  if(simplified.length===0){shtml+=`<div style="font-size:13px;color:var(--color-text-secondary);padding:6px 0">all debts settled!</div>`;}
+  simplified.forEach(r=>{
+    shtml+=`<div class="debt-row"><span style="font-size:14px;font-weight:500">${r.from}</span><span style="color:var(--color-text-secondary);font-size:18px">→</span><span style="font-size:14px;font-weight:500">${r.to}</span><span class="amt">€${r.amount.toFixed(2)}</span></div>`;
+  });
+  simpCard.innerHTML=shtml;c.appendChild(simpCard);
+
+  // per-session unpaid breakdown
+  if(allDebts.length>0){
+    const bySession={};
+    allDebts.forEach(d=>{
+      if(!bySession[d.sessionId]) bySession[d.sessionId]={date:d.sessionDate,players:d.sessionPlayers,debts:[]};
+      bySession[d.sessionId].debts.push(d);
+    });
+    Object.values(bySession).forEach(sess=>{
+      const sc=document.createElement('div');sc.className='card';
+      let html=`<div class="section-title">${sess.date} — ${sess.players.join(', ')}</div>`;
+      sess.debts.forEach(d=>{
+        html+=`<div class="debt-row"><span style="font-size:13px;flex:1">${d.from} → ${d.to}</span><span class="amt owed" style="margin-right:8px">€${d.amount.toFixed(2)}</span><button class="btn sm" onclick="markDebtPaid('${d.sessionId}',${d.idx})">mark paid</button></div>`;
+      });
+      sc.innerHTML=html;c.appendChild(sc);
+    });
+  }
+}
+
+function markDebtPaid(sessionId,idx){
+  const s=S.sessions.find(x=>x.id===sessionId);if(!s) return;
+  // find the idx-th unpaid debt
+  let count=0;
+  for(let i=0;i<s.payments.length;i++){
+    if(!s.payments[i].paid){
+      if(count===idx){s.payments[i].paid=true;break;}
+      count++;
+    }
+  }
+  save();renderDebts();
+}
+
+// ── HOME ──
+function renderHome(){
+  const c=document.getElementById('home-sessions');c.innerHTML='';
+  if(S.sessions.length===0){c.innerHTML='<div class="empty" style="padding:14px 0">no sessions yet</div>';return;}
+  S.sessions.slice().reverse().slice(0,3).forEach(s=>{
+    const unpaid=(s.payments||[]).filter(p=>!p.paid).length;
+    const div=document.createElement('div');div.className='card';div.style.cursor='pointer';
+    div.onclick=()=>showSessionDetail(s.id);
+    div.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:start"><div><div style="font-size:13px;font-weight:500;color:var(--color-text-primary)">${s.players.join(', ')}</div><div style="font-size:11px;color:var(--color-text-secondary);margin-top:2px">${s.date} · ${s.gamesCount||0} game${(s.gamesCount||0)!==1?'s':''}</div></div>${unpaid>0?`<span class="tag amber">${unpaid} unpaid</span>`:`<span class="tag green">settled</span>`}</div>`;
+    c.appendChild(div);
+  });
+}
+
+goHome();
+</script>
